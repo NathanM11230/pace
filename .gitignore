@@ -17,3 +17,7 @@ env/
 
 # Claude
 .claude/
+
+# Node
+frontend/node_modules/
+node_modules/
