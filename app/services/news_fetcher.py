@@ -56,6 +56,9 @@ def fetch_articles(category: str, query: str, max_articles: int = 3) -> list[dic
     """
     Fetch up to *max_articles* articles from NewsAPI for the given query.
 
+    Tries the last 24 hours first. If no articles pass quality filters,
+    falls back to the previous 24-48 hour window.
+
     Returns a list of article dicts on success, an empty list on any error.
     """
     api_key = settings.news_api_key.strip()
@@ -65,103 +68,110 @@ def fetch_articles(category: str, query: str, max_articles: int = 3) -> list[dic
         )
         return []
 
-    from_date = (datetime.now(timezone.utc) - timedelta(hours=24)).strftime(
-        "%Y-%m-%dT%H:%M:%SZ"
-    )
+    now = datetime.now(timezone.utc)
+    windows = [
+        (now - timedelta(hours=24), "last 24h"),
+        (now - timedelta(hours=48), "last 48h"),
+    ]
 
-    params = {
-        "q": query,
-        "from": from_date,
-        "sortBy": "publishedAt",
-        "language": "en",
-        "pageSize": max_articles,
-        "apiKey": api_key,
-    }
+    for from_dt, window_label in windows:
+        from_date = from_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+        params = {
+            "q": query,
+            "from": from_date,
+            "sortBy": "publishedAt",
+            "language": "en",
+            "pageSize": max_articles,
+            "apiKey": api_key,
+        }
 
-    try:
-        response = requests.get(_NEWS_API_BASE, params=params, timeout=15)
-        response.raise_for_status()
-        data = response.json()
+        try:
+            response = requests.get(_NEWS_API_BASE, params=params, timeout=15)
+            response.raise_for_status()
+            data = response.json()
 
-        articles = data.get("articles", [])
-        if not articles:
-            logger.info("No articles found for query '%s'.", query)
+            articles = data.get("articles", [])
+            if not articles:
+                logger.info("No articles found for query '%s' (%s).", query, window_label)
+                continue
+
+            results: list[dict] = []
+            for article in articles[:max_articles]:
+                # Skip articles with missing essential fields
+                if not article.get("title") or not article.get("url"):
+                    continue
+
+                title = article.get("title", "")
+                description = article.get("description") or ""
+                title_lower = title.lower()
+                combined = (title + " " + description).lower()
+                source_name = article.get("source", {}).get("name", "")
+
+                # 1. Skip thin descriptions
+                if len(description) < 100:
+                    logger.info("Skipping short description: '%s'", title[:60])
+                    continue
+
+                # 2. Skip unreliable sources
+                if source_name in _UNRELIABLE_SOURCES:
+                    logger.info("Skipping unreliable source '%s'.", source_name)
+                    continue
+
+                # 3. Skip sponsored/promotional/supplement content
+                if any(phrase in title_lower for phrase in _SPAM_PHRASES):
+                    logger.info("Skipping spam article: '%s'", title[:60])
+                    continue
+
+                # 4. Skip social media posts (titles with hashtags)
+                if "#" in title:
+                    logger.info("Skipping social media post: '%s'", title[:60])
+                    continue
+
+                # 5. Skip software/driver release notes (version numbers like 1.2.3.4)
+                if _VERSION_RE.search(title):
+                    logger.info("Skipping software release article: '%s'", title[:60])
+                    continue
+
+                # 6. Skip if none of the query keywords appear in title+description
+                query_words = [w.lower() for w in query.split() if len(w) > 3]
+                if query_words and not any(w in combined for w in query_words):
+                    logger.info("Skipping off-topic article for query '%s': '%s'", query, title[:60])
+                    continue
+
+                results.append(
+                    {
+                        "title": article.get("title", ""),
+                        "description": article.get("description") or "",
+                        "content": article.get("content") or "",
+                        "url": article.get("url", ""),
+                        "source": article.get("source", {}).get("name", "Unknown"),
+                        "publishedAt": article.get("publishedAt", ""),
+                        "category": category,
+                        "query": query,
+                    }
+                )
+
+            if results:
+                if window_label != "last 24h":
+                    logger.info(
+                        "No results in last 24h for query '%s' — using fallback %s.",
+                        query, window_label,
+                    )
+                logger.info(
+                    "Fetched %d articles for category='%s', query='%s' (%s).",
+                    len(results), category, query, window_label,
+                )
+                return results
+
+        except requests.exceptions.Timeout:
+            logger.error("Timeout while fetching articles for query '%s'.", query)
+            return []
+        except requests.exceptions.HTTPError as exc:
+            logger.error("HTTP error fetching articles for query '%s': %s", query, exc)
+            return []
+        except Exception as exc:
+            logger.exception("Unexpected error fetching articles for query '%s': %s", query, exc)
             return []
 
-        results: list[dict] = []
-        for article in articles[:max_articles]:
-            # Skip articles with missing essential fields
-            if not article.get("title") or not article.get("url"):
-                continue
-
-            title = article.get("title", "")
-            description = article.get("description") or ""
-            title_lower = title.lower()
-            combined = (title + " " + description).lower()
-            source_name = article.get("source", {}).get("name", "")
-
-            # 1. Skip thin descriptions
-            if len(description) < 100:
-                logger.info("Skipping short description: '%s'", title[:60])
-                continue
-
-            # 2. Skip unreliable sources
-            if source_name in _UNRELIABLE_SOURCES:
-                logger.info("Skipping unreliable source '%s'.", source_name)
-                continue
-
-            # 3. Skip sponsored/promotional/supplement content
-            if any(phrase in title_lower for phrase in _SPAM_PHRASES):
-                logger.info("Skipping spam article: '%s'", title[:60])
-                continue
-
-            # 4. Skip social media posts (titles with hashtags)
-            if "#" in title:
-                logger.info("Skipping social media post: '%s'", title[:60])
-                continue
-
-            # 5. Skip software/driver release notes (version numbers like 1.2.3.4)
-            if _VERSION_RE.search(title):
-                logger.info("Skipping software release article: '%s'", title[:60])
-                continue
-
-            # 6. Skip if none of the query keywords appear in title+description
-            query_words = [w.lower() for w in query.split() if len(w) > 3]
-            if query_words and not any(w in combined for w in query_words):
-                logger.info("Skipping off-topic article for query '%s': '%s'", query, title[:60])
-                continue
-
-            results.append(
-                {
-                    "title": article.get("title", ""),
-                    "description": article.get("description") or "",
-                    "content": article.get("content") or "",
-                    "url": article.get("url", ""),
-                    "source": article.get("source", {}).get("name", "Unknown"),
-                    "publishedAt": article.get("publishedAt", ""),
-                    "category": category,
-                    "query": query,
-                }
-            )
-
-        logger.info(
-            "Fetched %d articles for category='%s', query='%s'.",
-            len(results),
-            category,
-            query,
-        )
-        return results
-
-    except requests.exceptions.Timeout:
-        logger.error("Timeout while fetching articles for query '%s'.", query)
-        return []
-    except requests.exceptions.HTTPError as exc:
-        logger.error(
-            "HTTP error fetching articles for query '%s': %s", query, exc
-        )
-        return []
-    except Exception as exc:
-        logger.exception(
-            "Unexpected error fetching articles for query '%s': %s", query, exc
-        )
-        return []
+    logger.info("No articles found for query '%s' in either window.", query)
+    return []
