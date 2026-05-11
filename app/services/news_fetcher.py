@@ -23,8 +23,8 @@ _VERSION_RE = re.compile(r"\d+\.\d+\.\d+")
 
 CATEGORIES: dict[str, list[str]] = {
     "ai": ["artificial intelligence breakthroughs", "AI research"],
-    "tech": ["technology news", "tech industry"],
-    "startups": ["startup funding", "tech startups"],
+    "tech": ["big tech company announcement", "software product launch"],
+    "startups": ["startup funding round", "venture capital startup"],
     "gadgets": ["new smartphone release", "new laptop release"],
     "gaming": ["new video game release", "gaming news PC console"],
     "nba": ["NBA basketball", "NBA games"],
@@ -32,8 +32,8 @@ CATEGORIES: dict[str, list[str]] = {
     "soccer": ["soccer news", "premier league"],
     "mlb": ["MLB baseball", "baseball news"],
     "us_politics": ["US politics", "congress news"],
-    "world_news": ["world news", "international news"],
-    "business": ["business news", "corporate news"],
+    "world_news": ["global conflict diplomacy", "international politics crisis"],
+    "business": ["company earnings merger acquisition", "CEO executive business"],
     "markets": ["stock market", "financial markets"],
     "space": ["space exploration", "NASA SpaceX"],
     "health": ["health research", "medical breakthroughs"],
@@ -45,7 +45,7 @@ CATEGORIES: dict[str, list[str]] = {
     "food": ["food trends", "restaurant news"],
     "travel": ["travel news", "tourism"],
     "true_crime": ["true crime stories", "criminal investigations"],
-    "history": ["historical discoveries", "history news"],
+    "history": ["archaeological discovery", "historical research findings"],
     "psychology": ["psychology research", "mental health"],
 }
 
@@ -102,33 +102,33 @@ def fetch_articles(category: str, query: str, max_articles: int = 3) -> list[dic
 
             # 1. Skip thin descriptions
             if len(description) < 100:
-                logger.debug("Skipping short description: '%s'", title[:60])
+                logger.info("Skipping short description: '%s'", title[:60])
                 continue
 
             # 2. Skip unreliable sources
             if source_name in _UNRELIABLE_SOURCES:
-                logger.debug("Skipping unreliable source '%s'.", source_name)
+                logger.info("Skipping unreliable source '%s'.", source_name)
                 continue
 
             # 3. Skip sponsored/promotional/supplement content
             if any(phrase in title_lower for phrase in _SPAM_PHRASES):
-                logger.debug("Skipping spam article: '%s'", title[:60])
+                logger.info("Skipping spam article: '%s'", title[:60])
                 continue
 
             # 4. Skip social media posts (titles with hashtags)
             if "#" in title:
-                logger.debug("Skipping social media post: '%s'", title[:60])
+                logger.info("Skipping social media post: '%s'", title[:60])
                 continue
 
             # 5. Skip software/driver release notes (version numbers like 1.2.3.4)
             if _VERSION_RE.search(title):
-                logger.debug("Skipping software release article: '%s'", title[:60])
+                logger.info("Skipping software release article: '%s'", title[:60])
                 continue
 
             # 6. Skip if none of the query keywords appear in title+description
             query_words = [w.lower() for w in query.split() if len(w) > 3]
             if query_words and not any(w in combined for w in query_words):
-                logger.debug("Skipping off-topic article for query '%s': '%s'", query, title[:60])
+                logger.info("Skipping off-topic article for query '%s': '%s'", query, title[:60])
                 continue
 
             results.append(

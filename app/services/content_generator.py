@@ -79,7 +79,11 @@ def generate_daily_content(db: Session) -> dict:
     snippets_generated = 0
     errors = 0
     audio_dir = Path(settings.audio_files_dir)
-    seen_term_sets: list[frozenset] = []
+
+    # Seed seen_term_sets from existing DB snippets so cross-run dedup works
+    existing_titles = [row[0] for row in db.query(Snippet.title).all()]
+    seen_term_sets: list[frozenset] = [_key_terms(t) for t in existing_titles]
+    logger.info("Loaded %d existing snippet titles for dedup.", len(seen_term_sets))
 
     try:
         # TESTING MODE: Only generate 25 snippets total
