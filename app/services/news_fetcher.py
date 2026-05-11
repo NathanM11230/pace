@@ -25,8 +25,8 @@ CATEGORIES: dict[str, list[str]] = {
     "ai": ["artificial intelligence breakthroughs", "AI research"],
     "tech": ["technology news", "tech industry"],
     "startups": ["startup funding", "tech startups"],
-    "gadgets": ["new gadgets", "consumer electronics"],
-    "gaming": ["video games", "esports"],
+    "gadgets": ["new smartphone release", "new laptop release"],
+    "gaming": ["new video game release", "gaming news PC console"],
     "nba": ["NBA basketball", "NBA games"],
     "nfl": ["NFL football", "NFL news"],
     "soccer": ["soccer news", "premier league"],
@@ -65,14 +65,13 @@ def fetch_articles(category: str, query: str, max_articles: int = 3) -> list[dic
         )
         return []
 
-    # # Only look at articles published in the last 24 hours (disabled for testing)
-    # from_date = (datetime.now(timezone.utc) - timedelta(hours=24)).strftime(
-    #     "%Y-%m-%dT%H:%M:%SZ"
-    # )
+    from_date = (datetime.now(timezone.utc) - timedelta(hours=24)).strftime(
+        "%Y-%m-%dT%H:%M:%SZ"
+    )
 
     params = {
         "q": query,
-        # "from": from_date,  # disabled for testing — fetches articles from any date
+        "from": from_date,
         "sortBy": "publishedAt",
         "language": "en",
         "pageSize": max_articles,
