@@ -1,0 +1,19 @@
+# Secrets & config
+.env
+
+# Database
+*.db
+
+# Audio files
+audio_files/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# Claude
+.claude/
