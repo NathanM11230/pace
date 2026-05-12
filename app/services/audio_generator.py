@@ -29,7 +29,7 @@ def generate_audio(text: str, filename: str, output_dir: Path) -> str | None:
         )
         return None
 
-    voice_id = settings.elevenlabs_voice_id
+    voice_id = "nQ1MuXZfEsbTXioZJgdm"
     url = f"{_ELEVENLABS_BASE}/text-to-speech/{voice_id}"
 
     headers = {

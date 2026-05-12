@@ -123,8 +123,9 @@ def generate_daily_content(db: Session) -> dict:
                         # 1. Summarize
                         script = summarize_article(article)
                         if not script:
-                            logger.warning(
-                                "Summarization failed for article: '%s'", title[:60]
+                            logger.error(
+                                "Skipping article — script was None (API failure or quality filter): '%s'",
+                                title[:60],
                             )
                             errors += 1
                             continue

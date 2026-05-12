@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.database import SessionLocal, init_db
 from app.routers import admin, feed, snippets, users
+from app.services.cleanup import cleanup_old_snippets
 from app.services.content_generator import generate_daily_content
 
 logging.basicConfig(
@@ -32,6 +33,17 @@ def run_scheduled_generation() -> None:
         logger.info("Scheduled generation complete: %s", result)
     except Exception as exc:
         logger.exception("Scheduled generation failed: %s", exc)
+
+
+def run_scheduled_cleanup() -> None:
+    """Called by APScheduler. Removes snippets older than 48 hours."""
+    logger.info("Scheduled snippet cleanup starting.")
+    try:
+        with SessionLocal() as db:
+            result = cleanup_old_snippets(db)
+        logger.info("Scheduled cleanup complete: %s", result)
+    except Exception as exc:
+        logger.exception("Scheduled cleanup failed: %s", exc)
 
 
 # ---------------------------------------------------------------------------
@@ -60,6 +72,14 @@ async def lifespan(app: FastAPI):
         hour=settings.scheduler_hour,
         minute=settings.scheduler_minute,
         id="daily_content_generation",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        run_scheduled_cleanup,
+        "cron",
+        hour=settings.scheduler_hour,
+        minute=settings.scheduler_minute + 5,
+        id="daily_snippet_cleanup",
         replace_existing=True,
     )
     scheduler.start()
