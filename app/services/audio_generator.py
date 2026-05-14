@@ -22,6 +22,15 @@ try:
 except ImportError:
     pass  # Fall back to whatever pydub finds on PATH
 
+# Wire ffprobe from conda if it exists but isn't on PATH.
+# pydub calls get_prober_name() internally so we patch it directly.
+import os as _os, shutil as _shutil
+import pydub.utils as _pydub_utils
+if not _shutil.which("ffprobe"):
+    _candidate = _os.path.expanduser("~/anaconda3/Library/bin/ffprobe.exe")
+    if _os.path.exists(_candidate):
+        _pydub_utils.get_prober_name = lambda: _candidate
+
 logger = logging.getLogger(__name__)
 
 _ELEVENLABS_BASE = "https://api.elevenlabs.io/v1"
@@ -243,7 +252,7 @@ def generate_audio(
             logger.warning("Skipping line %d — TTS failed.", i)
             continue
 
-        seg = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp3")
+        seg = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp3", codec="mp3")
         seg = _apply_humanization(seg, line)
         segments.append((line, seg))
 

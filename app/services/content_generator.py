@@ -87,8 +87,8 @@ def generate_daily_content(db: Session) -> dict:
     logger.info("Loaded %d existing snippet titles for dedup.", len(seen_term_sets))
 
     try:
-        # TESTING MODE: Only generate 25 snippets total
-        max_total_snippets = 25
+        # TESTING MODE: Only generate 5 snippets total
+        max_total_snippets = 5
 
         for category, queries in CATEGORIES.items():
             for query in queries:
