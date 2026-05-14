@@ -1,55 +1,61 @@
 import logging
+import re
 
 import anthropic
 
 from app.config import settings
+from app.services.voice_pairs import get_voice_pair
 
 logger = logging.getLogger(__name__)
 
-_SYSTEM_PROMPT = """\
-You are a writer creating short audio scripts that sound like a real person sharing something \
-they genuinely find interesting — not a podcast host, not a news anchor, just a person talking.
+_SYSTEM_PROMPT_TEMPLATE = """\
+You are writing a short dialogue between two podcast hosts — Voice A and Voice B — for the show "{show}".
 
-Rules you must follow without exception:
-- Use contractions throughout: it's, they're, we've, don't, isn't, there's
-- Match tone to topic: serious news gets a measured tone, lighter stories get more ease
-- Use specific numbers and concrete details, never vague claims
-- Vary sentence length naturally — short punchy sentences mixed with longer ones
-- Sparingly use natural fillers like "actually", "turns out", or "apparently" — but not more than once per script
-- 150-180 words total, no more, no less
+Show personality:
+{personality}
 
-Banned phrases — never use these under any circumstances:
-"Hey listeners", "Welcome back", "So today we're talking about", "This is wild", \
-"You won't believe", "Get this", "Here's the thing", "Well, we'll see what happens", \
-"Only time will tell", "Time will tell", "In other news", "Meanwhile", \
-"running", "exercising", "commuting", "workout", "on your run", \
+STRUCTURE:
+- Output ONLY lines prefixed with "A:" or "B:". No headers, no stage directions, no meta-commentary.
+- 150-180 words total across both voices.
+- Voice A handles 60-70% of the talking. Voice B mostly reacts, interjects, or asks questions.
+- Each line is one turn. Multiple turns per voice are fine.
+
+CONVERSATION RULES:
+- Use fragments and incomplete sentences — not every line needs to be grammatically complete.
+- Include natural fillers where they fit: like, honestly, I mean, look, so, yeah, right.
+- Write interruptions by ending a line with an ASCII hyphen (-). This means that voice got cut off by the other. Use a plain hyphen only, not an em dash.
+- Short reactions on their own line are good: just "Yeah." or "Huh." or "Dude." is a valid line.
+- Voice B can occasionally make a weird observation or joke not directly in the article.
+- Reference something said earlier in the snippet (callbacks).
+- Vary your opening — never start the same way twice in a row.
+
+PERSONALITY:
+- Match the show's personality description above exactly.
+- Voice A and Voice B should have clearly distinct speech patterns.
+- Disagreement and pushback between voices is encouraged.
+
+BANNED PHRASES — never use these under any circumstances:
+"this is wild", "you won't believe", "get this", "here's the thing",
+"in other news", "meanwhile", "moving on",
+"Hey listeners", "Welcome back", "Today we're discussing",
+"well, we'll see what happens", "only time will tell", "time will tell",
+"running", "exercising", "commuting", "workout", "on your run",
 any forced enthusiasm or hype language
 
-Opening — rotate naturally between these styles, never repeating the same pattern twice in a row:
-- Drop straight into the news: "Google just announced..."
-- Start with a question: "What happens when..."
-- Lead with the stakes: "If this works, it could change..."
-- Open with context: "For years, scientists have wondered..."
-- Begin with a specific number or fact: "Three thousand people..."
-- Start with the human angle: "A team in Tokyo just figured out..."
-
-Structure:
-1. Open with the most interesting angle using one of the styles above
-2. Give the key information and context
-3. End with a specific detail or observation that makes you think — NOT a summary, NOT a call to action
-
-Write ONLY the script. No labels, no headers, no meta-commentary.\
+BANNED WRAP-UPS:
+Do not end with summary statements, calls to action, or tidy conclusions.
+End mid-conversation, with the last thought still hanging.\
 """
 
 _USER_TEMPLATE = """\
-Turn this article into a 60-second audio script (150-180 words).
+Turn this article into a 60-second dialogue (150-180 words total) between Voice A and Voice B.
 
 Title: {title}
 Source: {source}
 Summary: {description}
 Content: {content}
 
-Write the script now.\
+Write only the dialogue. Each line must start with "A:" or "B:".\
 """
 
 _QUALITY_FILTER_PHRASES = [
@@ -58,38 +64,45 @@ _QUALITY_FILTER_PHRASES = [
     "i cannot",
     "i am unable",
     "sorry, i",
+    "sorry i",
     "as an ai",
     "i do not have enough information",
     "the article does not provide",
 ]
 
 
-def summarize_article(article: dict) -> str | None:
+def summarize_article(article: dict, category: str = "unknown") -> str | None:
     """
-    Use the Anthropic Claude API to turn a raw article dict into a
-    ~150-180 word conversational running script.
+    Use Claude to turn a raw article dict into a ~150-180 word dialogue script.
 
-    Returns the script string on success, None on failure.
+    The script is formatted as lines prefixed "A:" or "B:".
+    Returns the script string on success, None on failure or quality filter rejection.
     """
     api_key = settings.anthropic_api_key.strip()
     if not api_key or api_key.lower() in ("none", ""):
         logger.warning("ANTHROPIC_API_KEY is not configured. Cannot summarize.")
         return None
 
+    voice_pair = get_voice_pair(category)
+    system_prompt = _SYSTEM_PROMPT_TEMPLATE.format(
+        show=voice_pair["show"],
+        personality=voice_pair["personality"],
+    )
+
     prompt = _USER_TEMPLATE.format(
         title=article.get("title", ""),
         source=article.get("source", "Unknown"),
         description=article.get("description", ""),
-        content=(article.get("content") or "")[:2000],  # trim to avoid huge contexts
+        content=(article.get("content") or "")[:2000],
     )
 
     try:
         client = anthropic.Anthropic(api_key=api_key)
         message = client.messages.create(
             model="claude-sonnet-4-6",
-            max_tokens=400,
+            max_tokens=500,
             messages=[{"role": "user", "content": prompt}],
-            system=_SYSTEM_PROMPT,
+            system=system_prompt,
         )
         script = message.content[0].text.strip()
 
@@ -105,8 +118,9 @@ def summarize_article(article: dict) -> str | None:
                 return None
 
         logger.info(
-            "Summarized article '%s' -> %d words.",
+            "Dialogue script for '%s' (show=%s): %d words.",
             article.get("title", "")[:60],
+            voice_pair["show"],
             len(script.split()),
         )
         return script

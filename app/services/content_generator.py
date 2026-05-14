@@ -11,6 +11,7 @@ from app.models import Snippet
 from app.services.audio_generator import generate_audio
 from app.services.news_fetcher import CATEGORIES, fetch_articles
 from app.services.summarizer import summarize_article
+from app.services.voice_pairs import get_voice_pair
 
 logger = logging.getLogger(__name__)
 
@@ -121,10 +122,18 @@ def generate_daily_content(db: Session) -> dict:
                             continue
 
                         # 1. Summarize
-                        script = summarize_article(article)
+                        show_name = get_voice_pair(category)["show"]
+                        logger.info(
+                            "Generating snippet for show '%s' (category='%s'): '%s'",
+                            show_name,
+                            category,
+                            title[:60],
+                        )
+                        script = summarize_article(article, category)
                         if not script:
                             logger.error(
-                                "Skipping article — script was None (API failure or quality filter): '%s'",
+                                "Skipping article — dialogue script was None "
+                                "(API failure or quality filter): '%s'",
                                 title[:60],
                             )
                             errors += 1
@@ -151,7 +160,7 @@ def generate_daily_content(db: Session) -> dict:
                         # 3. Generate audio
                         safe_title = _safe_filename(title)
                         audio_filename = f"{category}_{snippet.id}_{safe_title}.mp3"
-                        audio_path = generate_audio(script, audio_filename, audio_dir)
+                        audio_path = generate_audio(script, category, audio_filename, audio_dir)
 
                         if audio_path:
                             snippet.audio_file = audio_path
