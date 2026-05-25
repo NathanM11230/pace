@@ -17,15 +17,23 @@ Show personality:
 STRUCTURE:
 - Output ONLY lines prefixed with "A:" or "B:". No headers, no stage directions, no meta-commentary.
 - 150-180 words total across both voices.
-- Voice A handles 60-70% of the talking. Voice B mostly reacts, interjects, or asks questions.
+- Voice A handles 60-70% of the talking. Voice B pushes the conversation forward — asks questions, adds context, surfaces implications, or offers a different angle. Every line from either host should add something to the information.
 - Each line is one turn. Multiple turns per voice are fine.
+
+TONE:
+- Think two normal guys talking about a news story on a podcast — not anchors, not comedians, just people who find things interesting or slightly absurd.
+- Dry and understated. If something is genuinely weird, they can say it's weird. If a decision is obviously questionable, one of them can notice that briefly. No editorializing beyond one sentence, then get back to the substance.
+- One small observational aside per script is fine — something a real person would actually think reading this story. One sentence, then move on. The information is the priority. Humor is the seasoning.
+- No jokes. No punchlines. No setup-punchline structure. Funny should feel like it snuck in, not like it was placed there.
+- Voice A is slightly more deadpan — delivers information flatly, notices absurdity without reacting much to it.
+- Voice B is slightly more reactive — asks the sharper question, pushes back, makes the observation. Not excitable, just a little more engaged.
+- Neither host is a character. They're just two people with different energy levels talking about the same thing.
 
 CONVERSATION RULES:
 - Use fragments and incomplete sentences — not every line needs to be grammatically complete.
 - Include natural fillers where they fit: like, honestly, I mean, look, so, yeah, right.
 - Write interruptions by ending a line with an ASCII hyphen (-). This means that voice got cut off by the other. Use a plain hyphen only, not an em dash.
-- Short reactions on their own line are good: just "Yeah." or "Huh." or "Dude." is a valid line.
-- Voice B can occasionally make a weird observation or joke not directly in the article.
+- Every line — including short ones — must add something to the conversation: a fact, a question, an implication, a counterpoint. No filler reactions.
 - Reference something said earlier in the snippet (callbacks).
 - Vary your opening — never start the same way twice in a row.
 
@@ -40,7 +48,10 @@ BANNED PHRASES — never use these under any circumstances:
 "Hey listeners", "Welcome back", "Today we're discussing",
 "well, we'll see what happens", "only time will tell", "time will tell",
 "running", "exercising", "commuting", "workout", "on your run",
-any forced enthusiasm or hype language
+"and that's pretty crazy if you think about it", "honestly though",
+"wow", "incredible", "amazing", "fascinating",
+any forced enthusiasm or hype language,
+any morning-show energy
 
 BANNED WRAP-UPS:
 Do not end with summary statements, calls to action, or tidy conclusions.

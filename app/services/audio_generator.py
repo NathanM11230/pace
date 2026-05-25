@@ -276,6 +276,11 @@ def generate_audio(
                 "  Transition %d→%d: OVERLAP %d ms", i - 1, i, overlap_ms
             )
             result = result.overlay(curr_seg, position=position)
+            # pydub.overlay() truncates to len(result) — append the tail of
+            # curr_seg that extends past the end of result so the full response
+            # line is audible.
+            if len(curr_seg) > overlap_ms:
+                result = result + curr_seg[overlap_ms:]
         else:
             # Technique 2 — Variable Pause Timing
             pause_ms = _compute_pause_ms(prev_line, curr_line)
