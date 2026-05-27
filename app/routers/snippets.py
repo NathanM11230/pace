@@ -25,7 +25,10 @@ def list_snippets(
     List active snippets, optionally filtered by category.
     Supports pagination via limit/offset.
     """
-    query = db.query(Snippet).filter(Snippet.is_active == True)  # noqa: E712
+    query = db.query(Snippet).filter(
+        Snippet.is_active == True,  # noqa: E712
+        Snippet.audio_file.isnot(None),
+    )
     if category:
         query = query.filter(Snippet.category == category)
     snippets = (

@@ -53,7 +53,10 @@ def get_feed(user_id: int, db: Session = Depends(get_db)):
     )
     excluded_ids = {row.snippet_id for row in interacted_today}
 
-    base_query = db.query(Snippet).filter(Snippet.is_active == True)  # noqa: E712
+    base_query = db.query(Snippet).filter(
+        Snippet.is_active == True,  # noqa: E712
+        Snippet.audio_file.isnot(None),
+    )
 
     interests: list[str] = user.interests or []
     if interests:
