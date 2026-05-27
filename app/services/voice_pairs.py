@@ -24,7 +24,7 @@ _SHOWS: dict[str, dict] = {
     "TECH_HEADS": {
         "show": "TECH_HEADS",
         "voice_a": "tMvyQtpCVQ0DkixuYm6J",
-        "voice_b": "8DzKSPdgEQPaK5vKG0Rs",
+        "voice_b": "yj30vwTGJxSHezdAGsv9",
         "personality": (
             "Voice A is genuinely excited about new tech — loves explaining, gets "
             "nerdy about details, optimistic by default. Voice B is skeptical and "
