@@ -35,6 +35,22 @@ logger = logging.getLogger(__name__)
 
 _ELEVENLABS_BASE = "https://api.elevenlabs.io/v1"
 
+# ---------------------------------------------------------------------------
+# Brand chime — loaded once, appended to every snippet
+# ---------------------------------------------------------------------------
+_CHIME_PATH = Path(__file__).parent.parent.parent / "audio_files" / "whoosh.mp3"
+_chime_seg: "AudioSegment | None" = None
+
+
+def _get_chime() -> "AudioSegment | None":
+    global _chime_seg
+    if _chime_seg is None:
+        if _CHIME_PATH.exists():
+            _chime_seg = AudioSegment.from_file(str(_CHIME_PATH), format="mp3", codec="mp3")
+        else:
+            logger.warning("Brand chime not found at '%s' — skipping.", _CHIME_PATH)
+    return _chime_seg
+
 
 # ---------------------------------------------------------------------------
 # Dialogue parser
@@ -299,6 +315,11 @@ def generate_audio(
 
         # TODO: Technique 6 — Backchannel Sounds (future iteration)
         # Insert short ambient reactions (mm-hmm, uh-huh) during Voice A's longer lines.
+
+    # ---- Append brand chime ---------------------------------------------
+    chime = _get_chime()
+    if chime is not None:
+        result = result + chime
 
     # ---- Export ---------------------------------------------------------
     try:

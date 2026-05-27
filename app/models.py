@@ -47,6 +47,8 @@ class Snippet(Base):
     script: Mapped[str] = mapped_column(Text, nullable=False)
     word_count: Mapped[int] = mapped_column(Integer, nullable=False)
     audio_file: Mapped[str | None] = mapped_column(String, nullable=True)
+    has_whoosh: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False,
+                                             server_default="0")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow
     )
