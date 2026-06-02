@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     anthropic_api_key: str
-    news_api_key: str
+    newsdata_api_key: str
     elevenlabs_api_key: str
     database_url: str = "sqlite:///./pace.db"
     audio_files_dir: str = "./audio_files"
