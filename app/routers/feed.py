@@ -79,7 +79,7 @@ def get_feed(user_id: int, db: Session = Depends(get_db)):
         expanded: list[str] = []
         for interest in interests:
             expanded.extend(_INTEREST_TO_CATEGORIES.get(interest, [interest]))
-base_query = base_query.filter(Snippet.category.in_(expanded))
+        base_query = base_query.filter(Snippet.category.in_(expanded))
 
     if excluded_ids:
         base_query = base_query.filter(Snippet.id.notin_(excluded_ids))

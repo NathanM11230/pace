@@ -87,17 +87,14 @@ def generate_daily_content(db: Session) -> dict:
     logger.info("Loaded %d existing snippet titles for dedup.", len(seen_term_sets))
 
     try:
-        # TESTING MODE: Only generate 5 snippets total
-        max_total_snippets = 5
-
         for category, queries in CATEGORIES.items():
+            category_generated = 0
             for query in queries:
-                # Stop if we've reached our test limit
-                if snippets_generated >= max_total_snippets:
-                    logger.info(f"Reached test limit of {max_total_snippets} snippets. Stopping.")
+                # One snippet per category per run is enough for feed variety
+                if category_generated >= 1:
                     break
 
-                articles = fetch_articles(category, query, max_articles=2)
+                articles = fetch_articles(category, query, max_articles=1)
                 for article in articles:
                     try:
                         title = article.get("title", "").strip()
@@ -167,6 +164,7 @@ def generate_daily_content(db: Session) -> dict:
                             db.commit()
 
                         snippets_generated += 1
+                        category_generated += 1
                         seen_term_sets.append(_key_terms(title))
                         generation_status["snippets_generated"] = snippets_generated
                         logger.info(
@@ -187,8 +185,6 @@ def generate_daily_content(db: Session) -> dict:
                         )
                         errors += 1
                         db.rollback()
-            if snippets_generated >= max_total_snippets:
-                break
 
     except Exception as exc:
         logger.exception("Fatal error during content generation: %s", exc)
