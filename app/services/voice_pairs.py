@@ -9,6 +9,32 @@ Replace PLACEHOLDER_A / PLACEHOLDER_B with real ElevenLabs voice IDs before goin
 # Show definitions
 # ---------------------------------------------------------------------------
 
+
+# ---------------------------------------------------------------------------
+# Shared voice_settings presets
+# Each show carries its own preset. To add per-host overrides later,
+# add "voice_a_settings" / "voice_b_settings" keys alongside "voice_settings"
+# and merge them at the call site.
+# ---------------------------------------------------------------------------
+_VS_HIGH: dict = {
+    "stability": 0.30,
+    "similarity_boost": 0.75,
+    "style": 0.60,
+    "use_speaker_boost": True,
+}
+_VS_BALANCED: dict = {
+    "stability": 0.40,
+    "similarity_boost": 0.75,
+    "style": 0.45,
+    "use_speaker_boost": True,
+}
+_VS_MEASURED: dict = {
+    "stability": 0.50,
+    "similarity_boost": 0.75,
+    "style": 0.30,
+    "use_speaker_boost": True,
+}
+
 _SHOWS: dict[str, dict] = {
     "SPORTS_BROS": {
         "show": "SPORTS_BROS",
@@ -20,6 +46,7 @@ _SHOWS: dict[str, dict] = {
             "sarcastic humor — brings the stats, deflates the hype just enough. "
             "Think Pat McAfee + a stats nerd who can't help being right."
         ),
+        "voice_settings": _VS_HIGH,
     },
     "TECH_HEADS": {
         "show": "TECH_HEADS",
@@ -31,6 +58,7 @@ _SHOWS: dict[str, dict] = {
             "practical — always asking what it actually costs, who it's really for, "
             "and where the catch is. Think Hard Fork podcast."
         ),
+        "voice_settings": _VS_BALANCED,
     },
     "CRIME_FILES": {
         "show": "CRIME_FILES",
@@ -42,6 +70,7 @@ _SHOWS: dict[str, dict] = {
             "occasional dark humor. Both take the subject seriously. "
             "Think Crime Junkie energy."
         ),
+        "voice_settings": _VS_MEASURED,
     },
     "CURIOUS_ONES": {
         "show": "CURIOUS_ONES",
@@ -53,6 +82,7 @@ _SHOWS: dict[str, dict] = {
             "real-world consequences — connects abstract science to what it means "
             "for actual people. Think Radiolab energy."
         ),
+        "voice_settings": _VS_BALANCED,
     },
     "DAILY_BRIEFING": {
         "show": "DAILY_BRIEFING",
@@ -63,6 +93,7 @@ _SHOWS: dict[str, dict] = {
             "fluff. Voice B asks what this means for normal people — skeptical of "
             "spin, pulls things back to ground level. Less hype, more substance."
         ),
+        "voice_settings": _VS_MEASURED,
     },
     "POP_OFF": {
         "show": "POP_OFF",
@@ -73,6 +104,7 @@ _SHOWS: dict[str, dict] = {
             "context, picks sides. Voice B is the casual fan who reacts like the "
             "average viewer — surprised by deep cuts, has hot takes of their own."
         ),
+        "voice_settings": _VS_HIGH,
     },
     "REAL_TALK": {
         "show": "REAL_TALK",
@@ -83,6 +115,7 @@ _SHOWS: dict[str, dict] = {
             "stuff — no preachy energy, just genuinely useful. Voice B is the "
             "reasonable skeptic — asks if it actually works, checks the trade-offs."
         ),
+        "voice_settings": _VS_BALANCED,
     },
 }
 

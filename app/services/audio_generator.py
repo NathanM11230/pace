@@ -119,7 +119,7 @@ def parse_dialogue(script: str) -> list[dict]:
 # ElevenLabs TTS helper
 # ---------------------------------------------------------------------------
 
-def _fetch_tts(text: str, voice_id: str, api_key: str) -> bytes | None:
+def _fetch_tts(text: str, voice_id: str, api_key: str, voice_settings: dict) -> bytes | None:
     """Call ElevenLabs TTS for a single line and return raw MP3 bytes."""
     url = f"{_ELEVENLABS_BASE}/text-to-speech/{voice_id}"
     headers = {
@@ -129,11 +129,8 @@ def _fetch_tts(text: str, voice_id: str, api_key: str) -> bytes | None:
     }
     payload = {
         "text": text,
-        "model_id": "eleven_monolingual_v1",
-        "voice_settings": {
-            "stability": 0.5,
-            "similarity_boost": 0.75,
-        },
+        "model_id": "eleven_turbo_v2_5",
+        "voice_settings": voice_settings,
     }
     try:
         response = requests.post(url, json=payload, headers=headers, timeout=60)
@@ -263,7 +260,7 @@ def generate_audio(
         logger.debug(
             "Line %d [%s]: voice=%s  text=%r", i, line["ends_with"], line["voice"], line["text"][:60]
         )
-        audio_bytes = _fetch_tts(line["text"], voice_id, api_key)
+        audio_bytes = _fetch_tts(line["text"], voice_id, api_key, voice_pair["voice_settings"])
         if audio_bytes is None:
             logger.warning("Skipping line %d — TTS failed.", i)
             continue
