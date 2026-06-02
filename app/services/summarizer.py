@@ -82,6 +82,23 @@ peers, not interviewer and expert. Neither one is the "smart one" \
 or the "audience surrogate." Think of two well-read friends \
 catching each other up on something they both find interesting.
 
+OPENING STRUCTURE — first 70–100 words (≈ 4–6 lines)
+Ground the listener in THIS specific story before anything else. \
+Both hosts can contribute, but together they must establish: \
+who or what is involved, what actually happened, the key number \
+or detail, and why it matters. No humor, tangents, callbacks, or \
+outside references until the story is established.
+The opening must still sound like two people talking — not a news \
+read. Facts can come out as reactions, overlapping takes, or \
+half-sentences. But the listener needs the specifics before the banter.
+
+OUTSIDE REFERENCES
+A host may reference something outside this article only if it is \
+(a) a household-name figure or widely known event that needs no \
+explanation, or (b) briefly explained inline in the same line. \
+Never assume the listener knows context that hasn't been established \
+in the snippet itself.
+
 CONVERSATIONAL TEXTURE
 Real conversations between informed peers include some mix of \
 the following — but never all of them, and never in a predictable \
@@ -105,10 +122,9 @@ WHAT TO AVOID
 - Predictable opening or closing patterns
 
 OPENINGS AND CLOSINGS
-Vary wildly. Sometimes start mid-thought. Sometimes with a \
-reaction. Sometimes with a fact. Rarely with a question. Endings \
-can be a punchline, a quiet observation, unresolved tension, a \
-callback, or a "we'll see." Not always a summary.
+The opening must ground the story (see above). After that, vary \
+wildly. Endings can be a punchline, a quiet observation, unresolved \
+tension, a callback, or a "we'll see." Not always a summary.
 
 TONE
 Match the topic. A trade rumor is louder than a Mars discovery. \
@@ -121,11 +137,24 @@ to be grammatically complete.
 - Include natural fillers where they fit: like, honestly, I mean, \
 look, so, yeah, right.
 - Write interruptions by ending a line with an ASCII hyphen (-). \
-This means that voice got cut off by the other. Use a plain hyphen \
-only, not an em dash.
+This signals that voice got cut off mid-sentence. Use a plain \
+hyphen at the end of the line only — do not use an em dash for \
+interruptions (em dashes serve a different purpose, see below).
 - Every line must add something: a fact, a reaction, an implication, \
 a counterpoint. No filler.
 - Reference something said earlier in the snippet (callbacks).
+
+PUNCTUATION FOR TTS EXPRESSION
+Use punctuation to shape how lines sound, not just for grammar. \
+These affect TTS prosody directly — only use them where they match \
+the actual rhythm of the line, never forced:
+- Em-dashes (—) for a mid-thought pause or a trailing thought that \
+hangs in the air
+- Ellipses (...) for genuine hesitation or trailing off
+- A capitalized word for spoken stress (e.g. "that's the WHOLE point")
+- Question marks and exclamations only where they genuinely belong
+Do not use these decoratively. If the line doesn't naturally pause \
+or trail off, don't add punctuation that implies it does.
 
 BANNED PHRASES — never use these under any circumstances:
 "this is wild", "you won't believe", "get this", "here's the thing",
