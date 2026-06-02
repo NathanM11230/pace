@@ -1,50 +1,18 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Cpu, Trophy, Rocket, Heart, Bot, Check, ArrowRight, Loader2 } from 'lucide-react'
+import { Cpu, Trophy, Rocket, Heart, Bot, Newspaper, Music2, Shield, Check, ArrowRight, Loader2 } from 'lucide-react'
 import { api } from '../api/client'
 import useAppStore from '../store/appStore'
 
 const CATEGORIES = [
-  {
-    id: 'tech',
-    label: 'Tech',
-    description: 'AI, startups & gadgets',
-    Icon: Cpu,
-    color: '#0066FF',
-    bg: '#EBF3FF',
-  },
-  {
-    id: 'nba',
-    label: 'NBA',
-    description: 'Scores, trades & highlights',
-    Icon: Trophy,
-    color: '#FF6B35',
-    bg: '#FFF0EB',
-  },
-  {
-    id: 'space',
-    label: 'Space',
-    description: 'NASA, SpaceX & beyond',
-    Icon: Rocket,
-    color: '#7B61FF',
-    bg: '#F0EEFF',
-  },
-  {
-    id: 'health',
-    label: 'Health',
-    description: 'Fitness, nutrition & wellness',
-    Icon: Heart,
-    color: '#00D9A3',
-    bg: '#E6FAF5',
-  },
-  {
-    id: 'ai',
-    label: 'AI',
-    description: 'Machine learning & ChatGPT',
-    Icon: Bot,
-    color: '#FF61B6',
-    bg: '#FFE8F5',
-  },
+  { id: 'sports',  label: 'Sports',      description: 'NBA, NFL, soccer & more',    Icon: Trophy,    color: '#FF6B35', bg: '#FFF0EB' },
+  { id: 'tech',    label: 'Tech',        description: 'Startups, gadgets & gaming', Icon: Cpu,       color: '#0066FF', bg: '#EBF3FF' },
+  { id: 'ai',      label: 'AI',          description: 'Machine learning & models',  Icon: Bot,       color: '#FF61B6', bg: '#FFE8F5' },
+  { id: 'science', label: 'Science',     description: 'Space, climate & discovery', Icon: Rocket,    color: '#7B61FF', bg: '#F0EEFF' },
+  { id: 'health',  label: 'Health',      description: 'Wellness, food & travel',    Icon: Heart,     color: '#00D9A3', bg: '#E6FAF5' },
+  { id: 'news',    label: 'News',        description: 'Politics, business & world', Icon: Newspaper, color: '#374151', bg: '#F3F4F6' },
+  { id: 'pop',     label: 'Pop Culture', description: 'Movies, TV & music',         Icon: Music2,    color: '#EC4899', bg: '#FDF2F8' },
+  { id: 'crime',   label: 'True Crime',  description: 'Crime & investigation',      Icon: Shield,    color: '#DC2626', bg: '#FEF2F2' },
 ]
 
 export default function Onboarding() {

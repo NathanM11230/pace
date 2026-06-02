@@ -12,6 +12,22 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/feed", tags=["feed"])
 
+# Maps frontend show-level interest IDs → backend category names.
+# Includes backward-compat entries for old stored IDs (nba, space).
+_INTEREST_TO_CATEGORIES: dict[str, list[str]] = {
+    "sports":  ["nba", "nfl", "soccer", "mlb"],
+    "tech":    ["tech", "startups", "gadgets", "gaming"],
+    "ai":      ["ai"],
+    "science": ["space", "science", "climate", "psychology"],
+    "health":  ["health", "food", "travel"],
+    "news":    ["us_politics", "world_news", "business", "markets"],
+    "pop":     ["movies", "tv", "music"],
+    "crime":   ["true_crime", "history"],
+    # legacy IDs stored before the 8-show restructure
+    "nba":     ["nba", "nfl", "soccer", "mlb"],
+    "space":   ["space", "science", "climate", "psychology"],
+}
+
 
 def _get_user_or_404(user_id: int, db: Session) -> User:
     user = db.query(User).filter(User.id == user_id).first()
@@ -60,7 +76,10 @@ def get_feed(user_id: int, db: Session = Depends(get_db)):
 
     interests: list[str] = user.interests or []
     if interests:
-        base_query = base_query.filter(Snippet.category.in_(interests))
+        expanded: list[str] = []
+        for interest in interests:
+            expanded.extend(_INTEREST_TO_CATEGORIES.get(interest, [interest]))
+base_query = base_query.filter(Snippet.category.in_(expanded))
 
     if excluded_ids:
         base_query = base_query.filter(Snippet.id.notin_(excluded_ids))
